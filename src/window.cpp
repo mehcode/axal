@@ -5,8 +5,8 @@ axal::Window::Window() {
   setWindowTitle("Axal");
 
   // Size
-  auto width = 160 * 4;
-  auto height = 140 * 4;
+  auto width = 64 * 10;
+  auto height = 32 * 10;
   resize(width, height);
   setMinimumWidth(width);
   setMaximumWidth(width);
@@ -14,7 +14,6 @@ axal::Window::Window() {
   setMaximumHeight(height);
 
   // Layout
-  setContentsMargins(1, 1, 1, 1);
   setCentralWidget(new Viewport(this));
 }
 

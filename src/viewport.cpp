@@ -1,6 +1,42 @@
 #include "viewport.h"
+#include <SOIL/SOIL.h>
 
-axal::Viewport::Viewport(QWidget* parent) : QOpenGLWidget(parent) {
+GLuint VBO;
+GLuint VAO;
+GLuint EBO;
+
+GLuint shader;
+
+const char* vertex_shader_src = R"(
+#version 330
+
+layout (location = 0) in vec3 position;
+layout (location = 1) in vec2 texCoord;
+
+out vec2 TexCoord;
+
+void main() {
+  gl_Position = vec4(position, 1.0);
+  TexCoord = texCoord;
+}
+)";
+
+const char* fragment_shader_src = R"(
+#version 330
+
+in vec2 TexCoord;
+
+out vec4 color;
+
+uniform sampler2D ourTexture;
+
+void main() {
+  color = texture(ourTexture, TexCoord);
+  // color = vec4(0.3, 0.4, 0.4, 1.0);
+}
+)";
+
+axal::Viewport::Viewport(QWidget* parent) : QOpenGLWidget(parent), _texture(0), _framebuffer(nullptr) {
 }
 
 axal::Viewport::~Viewport() noexcept {
@@ -9,14 +45,103 @@ axal::Viewport::~Viewport() noexcept {
 void axal::Viewport::initializeGL() {
   initializeOpenGLFunctions();
 
-  glClearColor(1, 1, 1, 1);
+  glGenBuffers(1, &VBO);
+  glGenVertexArrays(1, &VAO);
+  glGenBuffers(1, &EBO);
+  glGenTextures(1, &_texture);
+
+  // Compile: Vertex Shader
+  auto vertex_shader = glCreateShader(GL_VERTEX_SHADER);
+  glShaderSource(vertex_shader, 1, &vertex_shader_src, NULL);
+  glCompileShader(vertex_shader);
+
+  GLint success;
+  GLchar err[512];
+  glGetShaderiv(vertex_shader, GL_COMPILE_STATUS, &success);
+
+  if (!success) {
+    glGetShaderInfoLog(vertex_shader, 512, NULL, err);
+    std::printf("error: vertex shader: compilation failed \n%s\n", err);
+  }
+
+  // Compile: Fragment Shader
+  // TODO: Error handling
+  auto fragment_shader = glCreateShader(GL_FRAGMENT_SHADER);
+  glShaderSource(fragment_shader, 1, &fragment_shader_src, NULL);
+  glCompileShader(fragment_shader);
+
+  // Link: Shader
+  shader = glCreateProgram();
+  glAttachShader(shader, vertex_shader);
+  glAttachShader(shader, fragment_shader);
+  glLinkProgram(shader);
+
+  glDeleteShader(vertex_shader);
+  glDeleteShader(fragment_shader);
+
+  glClearColor(0.2f, 0.3f, 0.3f, 1);
   glLoadIdentity();
+
+  glBindVertexArray(VAO);
+
+  GLfloat vertices[] = {
+    // Positions          // Texture Coords
+     1.0f,  1.0f, 0.0f,   1.0f, 0.0f,   // Top Right
+     1.0f, -1.0f, 0.0f,   1.0f, 1.0f,   // Bottom Right
+    -1.0f, -1.0f, 0.0f,   0.0f, 1.0f,   // Bottom Left
+    -1.0f,  1.0f, 0.0f,   0.0f, 0.0f    // Top Left
+  };
+
+  GLuint indices[] = {
+    0, 1, 3,   // First Triangle
+    1, 2, 3    // Second Triangle
+  };
+
+  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
+
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+  glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(0 * sizeof(GLfloat)));
+  glEnableVertexAttribArray(0);
+
+  glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
+  glEnableVertexAttribArray(1);
+
+  glBindVertexArray(0);
 }
 
 void axal::Viewport::paintGL() {
-  glClear(GL_COLOR_BUFFER_BIT);
+  glViewport(0, 0, width(), height());
+
+  if (_framebuffer) {
+    glBindTexture(GL_TEXTURE_2D, _texture);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, _framebuffer);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    glBindTexture(GL_TEXTURE_2D, 0);
+  }
+
+  glMatrixMode(GL_PROJECTION);
+  glLoadIdentity();
+
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  glUseProgram(shader);
+
+  glBindTexture(GL_TEXTURE_2D, _texture);
+  glBindVertexArray(VAO);
+
+  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+
+  glBindVertexArray(0);
 }
 
 void axal::Viewport::resizeGL(int w, int h) {
-    glViewport(0, 0, w, h);
+  // [...]
 }
