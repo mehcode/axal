@@ -28,15 +28,18 @@ pub trait Core {
 // Generate extern methods to "expose" the core
 #[macro_export]
 macro_rules! ax_expose (($t:path) => {
-  #![feature(box_syntax)]
-
   extern crate libc;
   use std::mem;
   use std::ffi::CStr;
+  use axal::Core;
+  use axal::VideoRefresh;
 
   #[no_mangle]
   pub unsafe extern "C" fn ax_new() -> *mut libc::c_void {
-      mem::transmute(box $t::new())
+      // BUG(rust): Not sure how to use $t directly below
+      use $t as t;
+
+      mem::transmute(Box::new(t::new()))
   }
 
   #[no_mangle]
