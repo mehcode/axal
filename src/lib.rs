@@ -26,6 +26,7 @@ pub trait Core {
 }
 
 // Generate extern methods to "expose" the core
+#[macro_export]
 macro_rules! ax_expose (($t:path) => {
   #![feature(box_syntax)]
 
