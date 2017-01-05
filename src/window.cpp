@@ -1,12 +1,13 @@
 #include "window.h"
 #include "viewport.h"
 
-axal::Window::Window() {
+ax::Window::Window() {
+  setContentsMargins(1, 1, 1, 1);
   setWindowTitle("Axal");
 
   // Size
-  auto width = 64 * 10;
-  auto height = 32 * 10;
+  auto width = (64 * 10) + 1;
+  auto height = (32 * 10) + 1;
   resize(width, height);
   setMinimumWidth(width);
   setMaximumWidth(width);
@@ -17,5 +18,9 @@ axal::Window::Window() {
   setCentralWidget(new Viewport(this));
 }
 
-axal::Window::~Window() noexcept {
+ax::Window::~Window() noexcept {
+}
+
+auto ax::Window::viewport() noexcept -> Viewport& {
+  return *((Viewport*)centralWidget());
 }

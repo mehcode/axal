@@ -1,51 +1,31 @@
 #include <cstdio>
 #include <iostream>
-#include <thread>
 
 #include <QApplication>
 #include <QSurfaceFormat>
-// #include <QMainWindow>
-// #include <QWidget>
-// #include <QMenu>
-// #include <QMenuBar>
-// #include <QMessageBox>
 
 #include "window.h"
 #include "library.h"
+#include "core.h"
 
-static bool _running = true;
+static std::unique_ptr<ax::Window> _window;
+static std::unique_ptr<ax::Core> _core;
 
-void ax_main(axal::Library* lib, void* handle) {
-  // Resolve `ax_run_next`
-  auto fn = lib->get<void (void*)>("ax_run_next");
-
-  // Invoke until told to quit
-  while (_running) {
-    fn(handle);
+void ax_video_refresh(uint8_t* buffer, uint32_t w, uint32_t h, uint32_t pitch) {
+  if (_window && _core && _core->is_running()) {
+    // TODO: Better name?
+    _window->viewport().update_framebuffer(buffer, w, h);
   }
 }
 
-void ax_on_video_frame(void* user_data, uint8_t* buffer, uint32_t w, uint32_t h, uint8_t stride) {
-  axal::Window* window = (axal::Window*)user_data;
-  window->viewport().update_framebuffer(buffer, w, h);
-}
-
 int main(int argc, char** argv) {
-  axal::Library lib("./libaxal_chip_8.dylib");
+  // Load CHIP-8 core
+  _core.reset(new ax::Core("./libaxal_chip_8.dylib"));
 
-  auto ax_new = lib.get<void*()>("ax_new");
-  auto ax_delete = lib.get<void(void*)>("ax_delete");
-  auto ax_reset = lib.get<void(void*)>("ax_reset");
-  auto ax_set_on_video_frame = lib.get<void(void*, void (*)(void*, uint8_t*, uint32_t, uint32_t, uint8_t), void*)>("ax_set_on_video_frame");
-  auto ax_open_rom = lib.get<void(void*, const char*)>("ax_open_rom");
+  // Insert predefined CHIP-8 ROM
+  _core->insert_rom("/Users/mehcode/Documents/Games/Chip-8/Cave.ch8");
 
-  auto handle = ax_new();
-
-  ax_open_rom(handle, "/Users/mehcode/Documents/Games/Chip-8/Cave.ch8");
-
-  std::thread ax_thread(ax_main, &lib, handle);
-
-  // Set desired Open GL version
+  // Set desired Open GL version: v3.3 CORE
   QSurfaceFormat fmt;
   fmt.setVersion(3, 3);
   fmt.setOption(QSurfaceFormat::DeprecatedFunctions, false);
@@ -54,21 +34,23 @@ int main(int argc, char** argv) {
 
   QSurfaceFormat::setDefaultFormat(fmt);
 
+  // Create Qt Application
   QApplication app(argc, argv);
-  axal::Window window;
+
+  // Create window
+  _window.reset(new ax::Window());
 
   // Setup "end of video frame" handler
-  ax_set_on_video_frame(handle, ax_on_video_frame, &window);
+  _core->set_video_refresh(ax_video_refresh);
 
-  window.show();
+  // Show window
+  _window->show();
 
   // Run application until "quit"
   int result = app.exec();
 
-  // Disable and dispose of Core
-  _running = false;
-  ax_thread.join();
-  ax_delete(handle);
+  // Destroy window (this must be destroyed _before_ the application)
+  _window.reset(NULL);
 
   return result;
 }

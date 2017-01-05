@@ -36,13 +36,13 @@ void main() {
 }
 )";
 
-axal::Viewport::Viewport(QWidget* parent) : QOpenGLWidget(parent), _texture(0), _framebuffer(nullptr) {
+ax::Viewport::Viewport(QWidget* parent) : QOpenGLWidget(parent), _texture(0), _framebuffer(nullptr) {
 }
 
-axal::Viewport::~Viewport() noexcept {
+ax::Viewport::~Viewport() noexcept {
 }
 
-void axal::Viewport::initializeGL() {
+void ax::Viewport::initializeGL() {
   initializeOpenGLFunctions();
 
   glGenBuffers(1, &VBO);
@@ -112,7 +112,7 @@ void axal::Viewport::initializeGL() {
   glBindVertexArray(0);
 }
 
-void axal::Viewport::paintGL() {
+void ax::Viewport::paintGL() {
   glViewport(0, 0, width(), height());
 
   if (_framebuffer) {
@@ -142,6 +142,6 @@ void axal::Viewport::paintGL() {
   glBindVertexArray(0);
 }
 
-void axal::Viewport::resizeGL(int w, int h) {
+void ax::Viewport::resizeGL(int w, int h) {
   // [...]
 }

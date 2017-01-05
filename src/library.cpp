@@ -6,7 +6,7 @@
 // TODO: Fork with #ifdef for WINAPI
 #include <dlfcn.h>
 
-axal::Library::Library(const char* filename) : _handle(NULL) {
+ax::Library::Library(const char* filename) : _handle(NULL) {
   // TODO: Fork with #ifdef for WINAPI
   // TODO: Auto apply `.dylib`, `.so`, or `.dll` depending on platform
 
@@ -18,7 +18,7 @@ axal::Library::Library(const char* filename) : _handle(NULL) {
   }
 }
 
-axal::Library::~Library() noexcept {
+ax::Library::~Library() noexcept {
   if (_handle) {
     // TODO: Fork with #ifdef for WINAPI
     // dlclose(_handle);
@@ -27,7 +27,7 @@ axal::Library::~Library() noexcept {
   }
 }
 
-void* axal::Library::_get(const char* name) {
+void* ax::Library::_get(const char* name) {
     // TODO: Fork with #ifdef for WINAPI
     return dlsym(_handle, name);
 }

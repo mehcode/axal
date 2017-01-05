@@ -36,16 +36,19 @@ configure_file(
 
 include_directories("${PROJECT_BINARY_DIR}")
 
+# Source files
+FILE(GLOB AXAL_SOURCES src/*.cpp)
+
 # Target
 # if(APPLE)
 #   set(MACOSX_BUNDLE_ICON_FILE launcher.icns)
 #   set(AXAL_ICON ${CMAKE_CURRENT_SOURCE_DIR}/res/launcher.icns)
 #   set_source_files_properties(${AXAL_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
 
-#   add_executable(Axal MACOSX_BUNDLE ${AXAL_ICON} src/main.cpp src/library.cpp src/window.cpp src/viewport.cpp)
+#   add_executable(Axal MACOSX_BUNDLE ${AXAL_ICON} ${AXAL_SOURCES})
 
 #   target_link_libraries(Axal Qt5::Widgets ${OPENGL_LIBRARIES} ${COCOA} ${IOKIT} ${COREVIDEO} ${SOIL})
 # else()
-  add_executable(axal ${AXAL_ICON} src/main.cpp src/library.cpp src/window.cpp src/viewport.cpp)
+  add_executable(axal ${AXAL_ICON} ${AXAL_SOURCES})
   target_link_libraries(axal Qt5::Widgets ${OPENGL_LIBRARIES} ${SOIL})
 # endif()

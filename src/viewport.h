@@ -4,7 +4,7 @@
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
 
-namespace axal {
+namespace ax {
 
 class Viewport : public QOpenGLWidget, protected QOpenGLFunctions {
  public:
@@ -32,6 +32,6 @@ class Viewport : public QOpenGLWidget, protected QOpenGLFunctions {
 
 };
 
-}  // namespace axal
+}  // namespace ax
 
 #endif  // AXAL_VIEWPORT_H

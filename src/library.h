@@ -1,7 +1,7 @@
 #ifndef AXAL_LIBRARY_H
 #define AXAL_LIBRARY_H 1
 
-namespace axal {
+namespace ax {
 
 class Library {
  public:
@@ -20,6 +20,6 @@ class Library {
 
 };
 
-}  // namespace axal
+}  // namespace ax
 
 #endif  // AXAL_LIBRARY_H

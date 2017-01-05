@@ -4,19 +4,18 @@
 #include <QMainWindow>
 #include "viewport.h"
 
-namespace axal {
+namespace ax {
 
 class Window : public QMainWindow {
  public:
   Window();
   virtual ~Window() noexcept;
 
-  axal::Viewport& viewport() {
-    return *((axal::Viewport*)centralWidget());
-  }
+  // Return the active OpenGL viewport
+  Viewport& viewport() noexcept;
 
 };
 
-}  // namespace axal
+}  // namespace ax
 
 #endif  // AXAL_WINDOW_H

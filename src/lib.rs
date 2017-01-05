@@ -17,8 +17,11 @@ pub trait Core {
     // Run for the next "frame"
     fn run_next(&mut self);
 
-    // Open ROM
-    fn open_rom(&mut self, filename: &str);
+    // Insert ROM
+    fn insert_rom(&mut self, filename: &str);
+
+    // Remove ROM (if inserted)
+    fn remove_rom(&mut self);
 
     // Store the `video_refresh` callback
     //  - The back-end should invoke this when a "frame" of video is complete (generally during V-Blank of the guest machine)
@@ -58,10 +61,15 @@ macro_rules! ax_expose (($t:path) => {
   }
 
   #[no_mangle]
-  pub unsafe extern "C" fn ax_open_rom(ptr: *mut libc::c_void, filename: *const libc::c_char) {
+  pub unsafe extern "C" fn ax_insert_rom(ptr: *mut libc::c_void, filename: *const libc::c_char) {
       let filename = CStr::from_ptr(filename).to_str().unwrap();
 
-      (*(ptr as *mut $t)).open_rom(filename);
+      (*(ptr as *mut $t)).insert_rom(filename);
+  }
+
+  #[no_mangle]
+  pub unsafe extern "C" fn ax_remove_rom(ptr: *mut libc::c_void) {
+      (*(ptr as *mut $t)).remove_rom();
   }
 
   #[no_mangle]
