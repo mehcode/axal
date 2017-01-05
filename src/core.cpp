@@ -5,8 +5,8 @@ ax::Core::Core(const char* filename) : _lib(filename), _handle(nullptr), _runnin
 }
 
 ax::Core::~Core() noexcept {
-  // Only stops if needed
-  stop();
+  // Only pauses if needed
+  pause();
 
   if (_handle) {
     _lib.get<void(void*)>("ax_delete")(_handle);
@@ -15,12 +15,12 @@ ax::Core::~Core() noexcept {
   }
 }
 
-void ax::Core::start() {
+void ax::Core::resume() {
   _running = true;
   _thread.reset(new std::thread(ax::Core::_main, this));
 }
 
-void ax::Core::stop() {
+void ax::Core::pause() {
   if (_running) {
     _running = false;
 

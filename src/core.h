@@ -19,8 +19,8 @@ class Core {
 
   virtual ~Core() noexcept;
 
-  void start();
-  void stop();
+  void resume();
+  void pause();
 
   void reset();
 

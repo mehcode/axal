@@ -46,6 +46,9 @@ int main(int argc, char** argv) {
   // Show window
   _window->show();
 
+  // Start/resume core
+  _core->resume();
+
   // Run application until "quit"
   int result = app.exec();
 
