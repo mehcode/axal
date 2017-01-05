@@ -1,5 +1,12 @@
 #include "core.h"
 
+#include <chrono>
+#include <cstdio>
+
+using std::chrono::high_resolution_clock;
+using std::chrono::duration_cast;
+using std::chrono::microseconds;
+
 ax::Core::Core(const char* filename) : _lib(filename), _handle(nullptr), _running(false) {
   _handle = _lib.get<void*()>("ax_new")();
 }
@@ -51,9 +58,24 @@ void ax::Core::_main(Core* self) noexcept {
   auto handle = self->_handle;
 
   while (self->_running) {
+    auto now = high_resolution_clock::now();
+
     // Run next "frame"
     run_next(handle);
 
-    // TODO: Wait until end of frame
+    // Wait until end of frame
+    // TODO: Configurable frame rate
+    // Each frame should take: 16666 microseconds
+    long long elapsed_us = 0;
+    long long rem = 0;
+
+    do {
+      elapsed_us = duration_cast<microseconds>(high_resolution_clock::now() - now).count();
+      rem = elapsed_us < 16666 ? (16666 - elapsed_us) : 0;
+
+      if (rem > 1000) {
+        std::this_thread::sleep_for(std::chrono::microseconds(rem));
+      }
+    } while (rem > 0);
   }
 }
