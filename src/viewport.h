@@ -13,9 +13,14 @@ class Viewport : public QOpenGLWidget, protected QOpenGLFunctions {
 
   void update_framebuffer(void* buffer, uint32_t width, uint32_t height) {
     // if (!_texture) return;
+
+    // Update (next) framebuffer
     _framebuffer = buffer;
     _width = width;
     _height = height;
+
+    // Refresh
+    update();
   }
 
  protected:
