@@ -1,5 +1,4 @@
 #include "viewport.h"
-#include <SOIL/SOIL.h>
 
 GLuint VBO;
 GLuint VAO;
