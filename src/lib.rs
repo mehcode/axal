@@ -302,7 +302,9 @@ pub unsafe fn new<T: 'static + Core + Default>() -> Box<Bundle> {
 macro_rules! ax_core (($t:path) => {
     #[no_mangle]
     pub unsafe extern "C" fn ax_new() -> *mut $crate::Bundle {
-        $crate::new::<$t>()
+        use std::mem;
+
+        mem::transmute($crate::new::<$t>())
     }
 });
 
