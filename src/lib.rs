@@ -1,7 +1,23 @@
 extern crate libc;
 
 use std::ffi::CStr;
+use std::ffi::CString;
 use std::mem;
+
+mod sys {
+    use libc;
+
+    #[repr(C)]
+    pub struct Info {
+        pub library_name: *const libc::c_char,
+        pub library_version: *const libc::c_char,
+        pub pixel_format: u8,
+        pub min_width: u32,
+        pub min_height: u32,
+        pub max_width: u32,
+        pub max_height: u32,
+    }
+}
 
 // [Video] Refresh Fn
 //  - buffer: *const u8
@@ -9,7 +25,7 @@ use std::mem;
 //  - height: u32
 //  - pitch: u32
 #[doc(hidden)]
-pub type UnsafeVideoRefreshFn = extern "C" fn(*const u8, u32, u32) -> ();
+type UnsafeVideoRefreshFn = extern "C" fn(*const u8, u32, u32) -> ();
 
 // [Input] Kind
 enum Input {
@@ -117,9 +133,10 @@ pub enum Keyboard {
 //  - device: u8 (Input)
 //  - id: u16 (Keyboard/Joypad)
 #[doc(hidden)]
-pub type UnsafeInputStateFn = extern "C" fn(u8, u8, u32) -> i16;
+type UnsafeInputStateFn = extern "C" fn(u8, u8, u32) -> i16;
 
 /// Pixel Formats available for software rendering.
+#[derive(Clone, Copy)]
 pub enum PixelFormat {
     // 8-bit: 3-bits for Red and Green, 2-bits for Blue
     R3_G3_B2,
@@ -129,6 +146,74 @@ pub enum PixelFormat {
 
     // 32-bit: 10-bits for Red, Green, and Blue (2 unused bits)
     R10_G10_B10,
+}
+
+pub struct Info {
+    /// Name of library providing the core
+    library_name: CString,
+
+    /// Version of library providing the core
+    library_version: CString,
+
+    pixel_format: PixelFormat,
+
+    min_width: u32,
+    min_height: u32,
+
+    max_width: u32,
+    max_height: u32,
+}
+
+impl Info {
+    pub fn new(name: &str, version: &str) -> Self {
+        // TODO: Handle unwrap with defaults perhaps?
+        Info {
+            library_name: CString::new(name).unwrap(),
+            library_version: CString::new(version).unwrap(),
+
+            pixel_format: PixelFormat::R5_B5_G6,
+
+            min_width: 0,
+            min_height: 0,
+
+            max_width: 0,
+            max_height: 0,
+        }
+    }
+
+    pub fn pixel_format(self, pixel_format: PixelFormat) -> Self {
+        Info { pixel_format: pixel_format, ..self }
+    }
+
+    pub fn size(self, width: u32, height: u32) -> Self {
+        Info {
+            min_width: width,
+            min_height: height,
+
+            max_width: if self.max_width == 0 {
+                width
+            } else {
+                self.max_width
+            },
+
+            max_height: if self.max_height == 0 {
+                height
+            } else {
+                self.max_height
+            },
+
+            ..self
+        }
+    }
+
+    pub fn max_size(self, width: u32, height: u32) -> Self {
+        Info {
+            max_width: width,
+            max_height: height,
+
+            ..self
+        }
+    }
 }
 
 // Runtime
@@ -175,10 +260,14 @@ impl Runtime {
 pub struct Bundle {
     runtime: Runtime,
     core: Box<Core>,
+    info: Info,
 }
 
 // Generic "Core" trait that must be implemented by a back-end
 pub trait Core {
+    /// Information
+    fn info(&self) -> Info;
+
     /// Soft reset
     fn reset(&mut self);
 
@@ -199,8 +288,11 @@ pub trait Core {
 
 // Create a new (boxed) instance of a core
 unsafe fn _new<T: 'static + Core + Default>() -> Box<Bundle> {
+    let core = Box::new(T::default());
+
     Box::new(Bundle {
-        core: Box::new(T::default()),
+        info: core.info(),
+        core: core,
         runtime: Default::default(),
     })
 }
@@ -215,6 +307,22 @@ macro_rules! ax_core (($t:path) => {
       mem::transmute(_new::<$t>())
   }
 });
+
+#[no_mangle]
+pub unsafe extern "C" fn ax_get_info(ptr: *mut Bundle, info: *mut sys::Info) {
+    if info.is_null() {
+        // TODO: Panic/Error?
+        return;
+    }
+
+    (*info).library_name = (*ptr).info.library_name.as_ptr();
+    (*info).library_version = (*ptr).info.library_version.as_ptr();
+    (*info).pixel_format = (*ptr).info.pixel_format as u8;
+    (*info).min_width = (*ptr).info.min_width;
+    (*info).min_height = (*ptr).info.min_height;
+    (*info).max_width = (*ptr).info.max_width;
+    (*info).max_height = (*ptr).info.max_height;
+}
 
 #[no_mangle]
 pub unsafe extern "C" fn ax_delete(ptr: *mut Bundle) {
