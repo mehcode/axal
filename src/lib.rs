@@ -324,26 +324,31 @@ pub unsafe extern "C" fn ax_get_info(ptr: *mut Bundle, info: *mut sys::Info) {
     (*info).max_height = (*ptr).info.max_height;
 }
 
+#[doc(hidden)]
 #[no_mangle]
 pub unsafe extern "C" fn ax_delete(ptr: *mut Bundle) {
     let _drop_me: Box<Bundle> = mem::transmute(ptr);
 }
 
+#[doc(hidden)]
 #[no_mangle]
 pub unsafe extern "C" fn ax_reset(ptr: *mut Bundle) {
     (*ptr).core.reset();
 }
 
+#[doc(hidden)]
 #[no_mangle]
 pub unsafe extern "C" fn ax_set_video_refresh(ptr: *mut Bundle, cb: UnsafeVideoRefreshFn) {
     (*ptr).runtime.video_refresh_fn = Some(cb);
 }
 
+#[doc(hidden)]
 #[no_mangle]
 pub unsafe extern "C" fn ax_set_input_state(ptr: *mut Bundle, cb: UnsafeInputStateFn) {
     (*ptr).runtime.input_state_fn = Some(cb);
 }
 
+#[doc(hidden)]
 #[no_mangle]
 pub unsafe extern "C" fn ax_rom_insert(ptr: *mut Bundle, filename: *const libc::c_char) {
     let filename = CStr::from_ptr(filename).to_str().unwrap();
@@ -351,11 +356,13 @@ pub unsafe extern "C" fn ax_rom_insert(ptr: *mut Bundle, filename: *const libc::
     (*ptr).core.rom_insert(filename);
 }
 
+#[doc(hidden)]
 #[no_mangle]
 pub unsafe extern "C" fn ax_rom_remove(ptr: *mut Bundle) {
     (*ptr).core.rom_remove();
 }
 
+#[doc(hidden)]
 #[no_mangle]
 pub unsafe extern "C" fn ax_run_next(ptr: *mut Bundle) {
     (*ptr).core.run_next(&mut (*ptr).runtime);
