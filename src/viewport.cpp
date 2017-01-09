@@ -117,8 +117,13 @@ void ax::Viewport::paintGL() {
   if (_framebuffer) {
     glBindTexture(GL_TEXTURE_2D, _texture);
 
+    // TODO: Configurable. Most cores want linear+ but CHIP-8 requires nearest.
+
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 
     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, _framebuffer);
     glGenerateMipmap(GL_TEXTURE_2D);
