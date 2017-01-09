@@ -16,13 +16,12 @@ include_directories(${OpenGL_INCLUDE_DIRS})
 link_directories(${OpenGL_LIBRARY_DIRS})
 add_definitions(${OpenGL_DEFINITIONS})
 
-# Find: SOIL
-find_library(SOIL SOIL)
-
 # Find: Additional Frameworks (macOS)
-find_library(COCOA Cocoa)
-find_library(IOKIT IOKit)
-find_library(COREVIDEO CoreVideo)
+if(APPLE)
+  find_library(COCOA Cocoa)
+  find_library(IOKIT IOKit)
+  find_library(COREVIDEO CoreVideo)
+endif()
 
 # Version: x.y
 set(AXAL_VERSION_MAJOR 0)
@@ -40,15 +39,18 @@ include_directories("${PROJECT_BINARY_DIR}")
 FILE(GLOB AXAL_SOURCES src/*.cpp)
 
 # Target
-# if(APPLE)
-#   set(MACOSX_BUNDLE_ICON_FILE launcher.icns)
-#   set(AXAL_ICON ${CMAKE_CURRENT_SOURCE_DIR}/res/launcher.icns)
-#   set_source_files_properties(${AXAL_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+if(APPLE)
+  set(MACOSX_BUNDLE_ICON_FILE launcher.icns)
+  set(AXAL_ICON ${CMAKE_CURRENT_SOURCE_DIR}/res/launcher.icns)
+  set_source_files_properties(${AXAL_ICON} PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
 
-#   add_executable(Axal MACOSX_BUNDLE ${AXAL_ICON} ${AXAL_SOURCES})
+  add_executable(Axal MACOSX_BUNDLE ${AXAL_ICON} ${AXAL_SOURCES})
 
-#   target_link_libraries(Axal Qt5::Widgets ${OPENGL_LIBRARIES} ${COCOA} ${IOKIT} ${COREVIDEO} ${SOIL})
-# else()
+  set_property(TARGET Axal PROPERTY CXX_STANDARD 14)
+
+  target_link_libraries(Axal Qt5::Widgets ${OPENGL_LIBRARIES} ${COCOA} ${IOKIT} ${COREVIDEO})
+else()
   add_executable(axal ${AXAL_ICON} ${AXAL_SOURCES})
-  target_link_libraries(axal Qt5::Widgets ${OPENGL_LIBRARIES} ${SOIL})
-# endif()
+  set_property(TARGET axal PROPERTY CXX_STANDARD 14)
+  target_link_libraries(axal Qt5::Widgets ${OPENGL_LIBRARIES})
+endif()
