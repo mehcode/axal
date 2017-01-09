@@ -286,8 +286,8 @@ pub trait Core {
     fn rom_remove(&mut self);
 }
 
-// Create a new (boxed) instance of a core
-unsafe fn _new<T: 'static + Core + Default>() -> Box<Bundle> {
+#[doc(hidden)]
+pub unsafe fn new<T: 'static + Core + Default>() -> Box<Bundle> {
     let core = Box::new(T::default());
 
     Box::new(Bundle {
@@ -300,12 +300,10 @@ unsafe fn _new<T: 'static + Core + Default>() -> Box<Bundle> {
 // Generate extern methods to "expose" the core
 #[macro_export]
 macro_rules! ax_core (($t:path) => {
-  extern crate libc;
-
-  #[no_mangle]
-  pub unsafe extern "C" fn ax_new() -> *mut Bundle {
-      mem::transmute(_new::<$t>())
-  }
+    #[no_mangle]
+    pub unsafe extern "C" fn ax_new() -> *mut $crate::Bundle {
+        $crate::new::<$t>()
+    }
 });
 
 #[no_mangle]
