@@ -22,6 +22,7 @@ ax::Window::Window() : _open(NULL), _close(NULL) {
 
   // Actions
   _action_open = new QAction("&Open...", this);
+  _action_open->setShortcut(Qt::CTRL + Qt::Key_O);
 
   connect(_action_open, &QAction::triggered, this, [this] {
     QFileDialog dialog(this);
