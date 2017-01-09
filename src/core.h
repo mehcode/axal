@@ -11,7 +11,9 @@
 
 namespace ax {
 
-using VideoRefreshCallback = void(*)(uint8_t*, uint32_t, uint32_t, uint32_t);
+using VideoRefreshFn = void(*)(uint8_t*, uint32_t, uint32_t, uint32_t);
+
+using InputStateFn = void(*)(uint8_t, uint8_t, uint32_t);
 
 class Core {
  public:
@@ -24,10 +26,12 @@ class Core {
 
   void reset();
 
-  void insert_rom(const char* filename);
-  void remove_rom();
+  void rom_insert(const char* filename);
+  void rom_remove();
 
-  void set_video_refresh(VideoRefreshCallback callback);
+  void set_video_refresh(VideoRefreshFn callback);
+
+  void set_input_state(InputStateFn callback);
 
   bool is_running() const {
     return _running;

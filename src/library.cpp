@@ -29,5 +29,12 @@ ax::Library::~Library() noexcept {
 
 void* ax::Library::_get(const char* name) {
     // TODO: Fork with #ifdef for WINAPI
-    return dlsym(_handle, name);
+    auto handle = dlsym(_handle, name);
+
+    if (!handle) {
+      std::fprintf(stderr, "error: failed to resolve symbol: %s\n", name);
+      std::exit(EXIT_FAILURE);
+    }
+
+    return handle;
 }

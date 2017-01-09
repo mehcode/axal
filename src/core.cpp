@@ -40,17 +40,21 @@ void ax::Core::reset() {
   _lib.get<void(void*)>("ax_reset")(_handle);
 }
 
-void ax::Core::insert_rom(const char* filename) {
+void ax::Core::rom_insert(const char* filename) {
   // TODO: Propagate errors here
-  _lib.get<void(void*, const char*)>("ax_insert_rom")(_handle, filename);
+  _lib.get<void(void*, const char*)>("ax_rom_insert")(_handle, filename);
 }
 
-void ax::Core::remove_rom() {
-  _lib.get<void(void*)>("ax_remove_rom")(_handle);
+void ax::Core::rom_remove() {
+  _lib.get<void(void*)>("ax_rom_remove")(_handle);
 }
 
-void ax::Core::set_video_refresh(VideoRefreshCallback callback) {
-  _lib.get<void(void*, VideoRefreshCallback)>("ax_set_video_refresh")(_handle, callback);
+void ax::Core::set_video_refresh(VideoRefreshFn callback) {
+  _lib.get<void(void*, VideoRefreshFn)>("ax_set_video_refresh")(_handle, callback);
+}
+
+void ax::Core::set_input_state(InputStateFn callback) {
+  _lib.get<void(void*, InputStateFn)>("ax_set_video_refresh")(_handle, callback);
 }
 
 void ax::Core::_main(Core* self) noexcept {
@@ -73,8 +77,9 @@ void ax::Core::_main(Core* self) noexcept {
       elapsed_us = duration_cast<microseconds>(high_resolution_clock::now() - now).count();
       rem = elapsed_us < 16666 ? (16666 - elapsed_us) : 0;
 
+      // OS sleeps is not very accurate <1ms so only sleep until the last 1ms.
       if (rem > 1000) {
-        std::this_thread::sleep_for(std::chrono::microseconds(rem));
+        std::this_thread::sleep_for(std::chrono::microseconds(rem - 1000));
       }
     } while (rem > 0);
   }

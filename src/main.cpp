@@ -22,7 +22,7 @@ void ax_video_refresh(uint8_t* buffer, uint32_t w, uint32_t h, uint32_t pitch) {
 void ax_open(const char* filename) {
   if (_core) {
     _core->pause();
-    _core->insert_rom(filename);
+    _core->rom_insert(filename);
     _core->reset();
     _core->resume();
   }
@@ -33,7 +33,7 @@ int main(int argc, char** argv) {
   _core.reset(new ax::Core("./libaxal_chip_8.dylib"));
 
   // Insert predefined CHIP-8 ROM
-  // _core->insert_rom("/Users/mehcode/Documents/Games/Chip-8/Cave.ch8");
+  // _core->rom_insert("/Users/mehcode/Documents/Games/Chip-8/Cave.ch8");
 
   // Set desired Open GL version: v3.3 CORE
   QSurfaceFormat fmt;
