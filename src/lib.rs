@@ -307,10 +307,10 @@ pub unsafe fn new<T: 'static + Core + Default>(userdata: *mut libc::c_void) -> B
 #[macro_export]
 macro_rules! ax_core (($t:path) => {
     #[no_mangle]
-    pub unsafe extern "C" fn ax_new(userdata: *mut libc::c_void) -> *mut $crate::Bundle {
+    pub unsafe extern "C" fn ax_new(userdata: *mut u8) -> *mut $crate::Bundle {
         use std::mem;
 
-        mem::transmute($crate::new::<$t>(userdata))
+        mem::transmute($crate::new::<$t>(mem::transmute(userdata)))
     }
 });
 
