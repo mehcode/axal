@@ -114,23 +114,6 @@ void ax::Viewport::initializeGL() {
 void ax::Viewport::paintGL() {
   glViewport(0, 0, width(), height());
 
-  if (_framebuffer) {
-    glBindTexture(GL_TEXTURE_2D, _texture);
-
-    // TODO: Configurable. Most cores want linear+ but CHIP-8 requires nearest.
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, _width, _height, 0, GL_RGB, GL_UNSIGNED_BYTE, _framebuffer);
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    glBindTexture(GL_TEXTURE_2D, 0);
-  }
-
   glMatrixMode(GL_PROJECTION);
   glLoadIdentity();
 
@@ -148,4 +131,19 @@ void ax::Viewport::paintGL() {
 
 void ax::Viewport::resizeGL(int w, int h) {
   // [...]
+}
+
+void ax::Viewport::_video_refresh(void* userdata, uint8_t* data, uint32_t width, uint32_t height, uint32_t) {
+  ax::Viewport* viewport = (ax::Viewport*)userdata;
+
+  viewport->glBindTexture(GL_TEXTURE_2D, viewport->_texture);
+
+  // TODO: Pretty sure these should be done once in init
+  viewport->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+  viewport->glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+
+  viewport->glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, width, height, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
+  viewport->glGenerateMipmap(GL_TEXTURE_2D);
+
+  viewport->glBindTexture(GL_TEXTURE_2D, 0);
 }

@@ -7,35 +7,28 @@
 #include <QMenu>
 
 #include "viewport.h"
+#include "runtime.h"
 
 namespace ax {
 
-class Window : public QMainWindow {
+// Core "Player" Window
+class Player : public QMainWindow {
  public:
-  Window();
-  virtual ~Window() noexcept;
+  Player(const char* filename);
+  virtual ~Player() noexcept;
 
+ private:
   // Return the active OpenGL viewport
   Viewport& viewport() noexcept;
 
-  // Callbacks
-  void set_open(void(*callback)(const char*)) {
-    _open = callback;
-  }
-
-  void set_close(void(*callback)()) {
-    _close = callback;
-  }
-
- private:
-  // Callbacks
-  void (*_open)(const char*);
-  void (*_close)();
+  // Axal Runtime
+  Runtime _runtime;
 
   // Actions
   // NOTE: All this memory is _owned_ by Qt
   QAction* _action_open;
   QAction* _action_close;
+  QAction* _action_reset;
 
 };
 

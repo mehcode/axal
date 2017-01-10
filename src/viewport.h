@@ -6,6 +6,8 @@
 
 namespace ax {
 
+class Player;
+
 class Viewport : public QOpenGLWidget, protected QOpenGLFunctions {
  public:
   Viewport(QWidget* parent);
@@ -29,6 +31,11 @@ class Viewport : public QOpenGLWidget, protected QOpenGLFunctions {
   virtual void resizeGL(int w, int h);
 
  private:
+  friend class Player;
+
+  static void _video_refresh(void* userdata,
+    uint8_t* data, uint32_t width, uint32_t height, uint32_t pitch);
+
   GLuint _texture;
 
   void* _framebuffer;

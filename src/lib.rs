@@ -25,12 +25,12 @@ mod sys {
 //  - height: u32
 //  - pitch: u32
 #[doc(hidden)]
-type UnsafeVideoRefreshFn = extern "C" fn(*const u8, u32, u32) -> ();
+type UnsafeVideoRefreshFn = extern "C" fn(*mut libc::c_void, *const u8, u32, u32) -> ();
 
 // [Input] Kind
 enum Input {
-    Joypad = 0,
-    Keyboard = 1,
+    Keyboard = 0,
+    Joypad = 1,
 }
 
 // [Input] Joypad
@@ -50,9 +50,9 @@ pub enum Joypad {
     Right,
 }
 
-// [Input] Keyboard
+// [Input] Key
 #[derive(Clone, Copy)]
-pub enum Keyboard {
+pub enum Key {
     A,
     B,
     C,
@@ -135,7 +135,7 @@ pub enum Keyboard {
 //  - device: u8 (Input)
 //  - id: u16 (Keyboard/Joypad)
 #[doc(hidden)]
-type UnsafeInputStateFn = extern "C" fn(u8, u8, u32) -> i16;
+type UnsafeInputStateFn = extern "C" fn(*mut libc::c_void, u8, u8, u32) -> i16;
 
 /// Pixel Formats available for software rendering.
 #[derive(Clone, Copy)]
@@ -219,10 +219,10 @@ impl Info {
 }
 
 // Runtime
-#[derive(Default)]
 pub struct Runtime {
     video_refresh_fn: Option<UnsafeVideoRefreshFn>,
     input_state_fn: Option<UnsafeInputStateFn>,
+    userdata: *mut libc::c_void,
 }
 
 impl Runtime {
@@ -243,14 +243,14 @@ impl Runtime {
     ///
     pub fn video_refresh(&self, data: &[u8], width: u32, height: u32) {
         if let Some(ref video_refresh_fn) = self.video_refresh_fn {
-            (video_refresh_fn)(data.as_ptr(), width, height);
+            (video_refresh_fn)(self.userdata, data.as_ptr(), width, height);
         }
     }
 
     /// Get the state of a key from a `Keyboard` device.
-    pub fn input_keyboard_state(&self, port: u8, key: Keyboard) -> bool {
+    pub fn input_keyboard_state(&self, port: u8, key: Key) -> bool {
         if let Some(ref input_state_fn) = self.input_state_fn {
-            (input_state_fn)(port, Input::Keyboard as u8, key as u32) == 1
+            (input_state_fn)(self.userdata, port, Input::Keyboard as u8, key as u32) == 1
         } else {
             false
         }
@@ -289,13 +289,17 @@ pub trait Core {
 }
 
 #[doc(hidden)]
-pub unsafe fn new<T: 'static + Core + Default>() -> Box<Bundle> {
+pub unsafe fn new<T: 'static + Core + Default>(userdata: *mut libc::c_void) -> Box<Bundle> {
     let core = Box::new(T::default());
 
     Box::new(Bundle {
         info: core.info(),
         core: core,
-        runtime: Default::default(),
+        runtime: Runtime {
+            userdata: userdata,
+            video_refresh_fn: None,
+            input_state_fn: None,
+        },
     })
 }
 
@@ -303,10 +307,10 @@ pub unsafe fn new<T: 'static + Core + Default>() -> Box<Bundle> {
 #[macro_export]
 macro_rules! ax_core (($t:path) => {
     #[no_mangle]
-    pub unsafe extern "C" fn ax_new() -> *mut $crate::Bundle {
+    pub unsafe extern "C" fn ax_new(userdata: *mut libc::c_void) -> *mut $crate::Bundle {
         use std::mem;
 
-        mem::transmute($crate::new::<$t>())
+        mem::transmute($crate::new::<$t>(userdata))
     }
 });
 
