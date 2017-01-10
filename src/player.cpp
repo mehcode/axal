@@ -9,8 +9,8 @@ ax::Player::Player(const char* filename) {
 
   // Size
   // TODO: Get size from last run
-  auto width = (64 * 5) + 2;
-  auto height = (32 * 5) + 1;
+  auto width = (64 * 10) + 2;
+  auto height = (32 * 10) + 1;
   resize(width, height);
   setMinimumWidth(width);
   setMaximumWidth(width);

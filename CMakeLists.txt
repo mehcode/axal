@@ -16,12 +16,6 @@ include_directories(${OpenGL_INCLUDE_DIRS})
 link_directories(${OpenGL_LIBRARY_DIRS})
 add_definitions(${OpenGL_DEFINITIONS})
 
-# Find: SDL (for input controller)
-include(FindPkgConfig)
-pkg_search_module(SDL2 REQUIRED sdl2)
-
-include_directories(${SDL2_INCLUDE_DIRS})
-
 # Find: Additional Frameworks (macOS)
 if(APPLE)
   find_library(COCOA Cocoa)
@@ -55,9 +49,9 @@ if(APPLE)
 
   set_property(TARGET Axal PROPERTY CXX_STANDARD 14)
 
-  target_link_libraries(Axal Qt5::Widgets ${OPENGL_LIBRARIES} ${SDL2_LIBRARIES} ${COCOA} ${IOKIT} ${COREVIDEO})
+  target_link_libraries(Axal Qt5::Widgets ${OPENGL_LIBRARIES} ${COCOA} ${IOKIT} ${COREVIDEO})
 else()
   add_executable(axal ${AXAL_ICON} ${AXAL_SOURCES})
   set_property(TARGET axal PROPERTY CXX_STANDARD 14)
-  target_link_libraries(axal Qt5::Widgets ${OPENGL_LIBRARIES} ${SDL2_LIBRARIES})
+  target_link_libraries(axal Qt5::Widgets ${OPENGL_LIBRARIES})
 endif()
