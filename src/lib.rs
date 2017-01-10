@@ -34,6 +34,7 @@ enum Input {
 }
 
 // [Input] Joypad
+#[derive(Clone, Copy)]
 pub enum Joypad {
     A,
     B,
@@ -50,6 +51,7 @@ pub enum Joypad {
 }
 
 // [Input] Keyboard
+#[derive(Clone, Copy)]
 pub enum Keyboard {
     A,
     B,
