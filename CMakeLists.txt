@@ -51,7 +51,17 @@ if(APPLE)
 
   target_link_libraries(Axal Qt5::Widgets ${OPENGL_LIBRARIES} ${COCOA} ${IOKIT} ${COREVIDEO})
 else()
+  find_package(Threads REQUIRED)
+
   add_executable(axal ${AXAL_ICON} ${AXAL_SOURCES})
   set_property(TARGET axal PROPERTY CXX_STANDARD 14)
-  target_link_libraries(axal Qt5::Widgets ${OPENGL_LIBRARIES})
+
+  if(THREADS_HAVE_PTHREAD_ARG)
+    target_compile_options(PUBLIC axal "-pthread")
+  endif()
+  if(CMAKE_THREAD_LIBS_INIT)
+    target_link_libraries(axal "${CMAKE_THREAD_LIBS_INIT}")
+  endif()
+
+  target_link_libraries(axal Qt5::Widgets ${OPENGL_LIBRARIES} ${CMAKE_DL_LIBS})
 endif()

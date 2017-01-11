@@ -4,6 +4,8 @@
 #include <chrono>
 #include <cassert>
 #include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 using std::chrono::high_resolution_clock;
 using std::chrono::duration_cast;

@@ -2,7 +2,6 @@
 #include <thread>
 
 GLuint VBO;
-GLuint VAO;
 GLuint EBO;
 
 GLuint shader;
@@ -36,7 +35,7 @@ void main() {
 }
 )";
 
-ax::Viewport::Viewport(QWidget* parent) : QOpenGLWidget(parent), _texture(0) {
+ax::Viewport::Viewport(QWidget* parent) : QOpenGLWidget(parent), _texture(0), _vao(this) {
   setFocusPolicy(Qt::StrongFocus);
 
   // Setup cross-thread signal
@@ -124,9 +123,9 @@ void ax::Viewport::initializeGL() {
   initializeOpenGLFunctions();
 
   glGenBuffers(1, &VBO);
-  glGenVertexArrays(1, &VAO);
   glGenBuffers(1, &EBO);
   glGenTextures(1, &_texture);
+  _vao.create();
 
   // Compile: Vertex Shader
   auto vertex_shader = glCreateShader(GL_VERTEX_SHADER);
@@ -157,10 +156,10 @@ void ax::Viewport::initializeGL() {
   glDeleteShader(vertex_shader);
   glDeleteShader(fragment_shader);
 
-  glClearColor(0.2f, 0.3f, 0.3f, 1);
+  glClearColor(0.3f, 0.3f, 0.3f, 1);
   glLoadIdentity();
 
-  glBindVertexArray(VAO);
+  _vao.bind();
 
   GLfloat vertices[] = {
     // Positions          // Texture Coords
@@ -187,7 +186,7 @@ void ax::Viewport::initializeGL() {
   glVertexAttribPointer(1, 2, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(3 * sizeof(GLfloat)));
   glEnableVertexAttribArray(1);
 
-  glBindVertexArray(0);
+  _vao.release();
 }
 
 void ax::Viewport::paintGL() {
@@ -201,11 +200,14 @@ void ax::Viewport::paintGL() {
   glUseProgram(shader);
 
   glBindTexture(GL_TEXTURE_2D, _texture);
-  glBindVertexArray(VAO);
+
+  _vao.bind();
 
   glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-  glBindVertexArray(0);
+  _vao.release();
+
+  glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 void ax::Viewport::resizeGL(int w, int h) {

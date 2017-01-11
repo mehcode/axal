@@ -3,6 +3,7 @@
 
 #include <QOpenGLWidget>
 #include <QOpenGLFunctions>
+#include <QOpenGLVertexArrayObject>
 #include <QKeyEvent>
 #include <unordered_map>
 
@@ -42,6 +43,7 @@ class Viewport : public QOpenGLWidget, protected QOpenGLFunctions {
     uint8_t* data, uint32_t width, uint32_t height, uint32_t pitch);
 
   GLuint _texture;
+  QOpenGLVertexArrayObject _vao;
 
   std::unordered_map<int, axal_key> _qkey_to_axkey;
   std::unordered_map<axal_key, bool> _key_state;
