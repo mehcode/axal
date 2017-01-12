@@ -46,6 +46,13 @@ ax::Player::Player(const char* filename) {
           _runtime.rom_insert(filename.toUtf8().constData());
           _runtime.reset();
           _runtime.resume();
+
+          // Show viewport
+          this->viewport().setViewportVisible(true);
+
+          // TODO: Centralize logic
+          _action_reset->setEnabled(true);
+          _action_close->setEnabled(true);
         }
       }
     }
@@ -55,11 +62,34 @@ ax::Player::Player(const char* filename) {
   _action_reset->setShortcut(Qt::CTRL + Qt::Key_R);
   _action_reset->setEnabled(false);
 
+  connect(_action_reset, &QAction::triggered, this, [this] {
+    if (_runtime.is_loaded() && _runtime.is_running()) {
+      _runtime.pause();
+      _runtime.reset();
+      _runtime.resume();
+    }
+  });
+
   _action_close = new QAction("&Close", this);
   _action_close->setShortcut(Qt::CTRL + Qt::Key_W);
   _action_close->setEnabled(false);
 
-  // Menu
+  connect(_action_close, &QAction::triggered, this, [this] {
+    if (_runtime.is_loaded() && _runtime.is_running()) {
+      // Pause and remove ROM
+      _runtime.pause();
+      _runtime.rom_remove();
+
+      // Hide viewport
+      this->viewport().setViewportVisible(false);
+
+      // TODO: Centralize logic
+      _action_reset->setEnabled(false);
+      _action_close->setEnabled(false);
+    }
+  });
+
+  // Menu: File
   auto menu_file = menuBar()->addMenu("&File");
   menu_file->addAction(_action_open);
   menu_file->addSeparator();

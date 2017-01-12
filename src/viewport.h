@@ -21,6 +21,8 @@ class Viewport : public QOpenGLWidget, protected QOpenGLFunctions {
   Viewport(QWidget* parent);
   virtual ~Viewport() noexcept;
 
+  void setViewportVisible(bool v);
+
  public slots:
   void updateFramebuffer(void* framebuffer, unsigned w, unsigned h);
 
@@ -42,11 +44,21 @@ class Viewport : public QOpenGLWidget, protected QOpenGLFunctions {
   static void _video_refresh(void* userdata,
     uint8_t* data, uint32_t width, uint32_t height, uint32_t pitch);
 
+  bool _visible;
+
   GLuint _texture;
   QOpenGLVertexArrayObject _vao;
 
+  GLuint _vbo;
+  GLuint _ebo;
+
+  GLuint _shader;
+
   std::unordered_map<int, axal_key> _qkey_to_axkey;
   std::unordered_map<axal_key, bool> _key_state;
+
+  unsigned _width;
+  unsigned _height;
 
 };
 

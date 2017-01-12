@@ -1,11 +1,6 @@
 #include "viewport.h"
 #include <thread>
 
-GLuint VBO;
-GLuint EBO;
-
-GLuint shader;
-
 const char* vertex_shader_src = R"(
 #version 330
 
@@ -35,7 +30,7 @@ void main() {
 }
 )";
 
-ax::Viewport::Viewport(QWidget* parent) : QOpenGLWidget(parent), _texture(0), _vao(this) {
+ax::Viewport::Viewport(QWidget* parent) : QOpenGLWidget(parent), _texture(0), _vao(this), _width(0), _height(0), _visible(false) {
   setFocusPolicy(Qt::StrongFocus);
 
   // Setup cross-thread signal
@@ -119,11 +114,17 @@ ax::Viewport::Viewport(QWidget* parent) : QOpenGLWidget(parent), _texture(0), _v
 ax::Viewport::~Viewport() noexcept {
 }
 
+void ax::Viewport::setViewportVisible(bool v) {
+  _visible = v;
+
+  update();
+}
+
 void ax::Viewport::initializeGL() {
   initializeOpenGLFunctions();
 
-  glGenBuffers(1, &VBO);
-  glGenBuffers(1, &EBO);
+  glGenBuffers(1, &_vbo);
+  glGenBuffers(1, &_ebo);
   glGenTextures(1, &_texture);
   _vao.create();
 
@@ -148,10 +149,10 @@ void ax::Viewport::initializeGL() {
   glCompileShader(fragment_shader);
 
   // Link: Shader
-  shader = glCreateProgram();
-  glAttachShader(shader, vertex_shader);
-  glAttachShader(shader, fragment_shader);
-  glLinkProgram(shader);
+  _shader = glCreateProgram();
+  glAttachShader(_shader, vertex_shader);
+  glAttachShader(_shader, fragment_shader);
+  glLinkProgram(_shader);
 
   glDeleteShader(vertex_shader);
   glDeleteShader(fragment_shader);
@@ -174,10 +175,10 @@ void ax::Viewport::initializeGL() {
     1, 2, 3    // Second Triangle
   };
 
-  glBindBuffer(GL_ARRAY_BUFFER, VBO);
+  glBindBuffer(GL_ARRAY_BUFFER, _vbo);
   glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
 
-  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
+  glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, _ebo);
   glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 5 * sizeof(GLfloat), (GLvoid*)(0 * sizeof(GLfloat)));
@@ -197,17 +198,19 @@ void ax::Viewport::paintGL() {
 
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  glUseProgram(shader);
+  if (_visible) {
+    glUseProgram(_shader);
 
-  glBindTexture(GL_TEXTURE_2D, _texture);
+    glBindTexture(GL_TEXTURE_2D, _texture);
 
-  _vao.bind();
+    _vao.bind();
 
-  glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
+    glDrawElements(GL_TRIANGLES, 6, GL_UNSIGNED_INT, 0);
 
-  _vao.release();
+    _vao.release();
 
-  glBindTexture(GL_TEXTURE_2D, 0);
+    glBindTexture(GL_TEXTURE_2D, 0);
+  }
 }
 
 void ax::Viewport::resizeGL(int w, int h) {
@@ -215,6 +218,10 @@ void ax::Viewport::resizeGL(int w, int h) {
 }
 
 void ax::Viewport::updateFramebuffer(void* framebuffer, unsigned w, unsigned h) {
+  // Save width/height parameters
+  _width = w;
+  _height = h;
+
   glBindTexture(GL_TEXTURE_2D, _texture);
 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
@@ -224,8 +231,6 @@ void ax::Viewport::updateFramebuffer(void* framebuffer, unsigned w, unsigned h) 
   glGenerateMipmap(GL_TEXTURE_2D);
 
   glBindTexture(GL_TEXTURE_2D, 0);
-
-  // Let Qt know we need to re-paint the viewport
   update();
 }
 

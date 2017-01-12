@@ -96,8 +96,6 @@ int16_t ax::Runtime::_input_state(void* userdata, uint8_t port, uint8_t device, 
   assert(port == 0);
   assert(device == 0);
 
-  printf("input_state for key: %d\n", key);
-
   // TODO: Use cloned key state
 
   return viewport->_key_state[(axal_key)key] ? 1 : 0;
