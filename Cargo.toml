@@ -1,5 +1,10 @@
 [package]
 name = "axal"
+description = "Framework to greatly simply emulation core development. Provides methods to auto-generate bindings for libretro in addition to a stand-alone UI."
+homepage = "https://github.com/mehcode/axal"
+repository = "https://github.com/mehcode/axal"
+license = "MIT"
+readme = "README.md"
 version = "0.0.0"
 links = "axal"
 build = "build.rs"
