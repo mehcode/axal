@@ -17,6 +17,8 @@ class Player : public QMainWindow {
   Player(const char* filename);
   virtual ~Player() noexcept;
 
+  void resize(unsigned w, unsigned h);
+
  private:
   // Return the active OpenGL viewport
   Viewport& viewport() noexcept;

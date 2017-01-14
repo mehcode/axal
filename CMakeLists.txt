@@ -39,7 +39,7 @@ include_directories("${PROJECT_SOURCE_DIR}/include")
 # Source files
 FILE(GLOB AXAL_SOURCES src/*.cpp)
 
-# Target
+# Build
 if(APPLE)
   set(MACOSX_BUNDLE_ICON_FILE launcher.icns)
   set(AXAL_ICON ${CMAKE_CURRENT_SOURCE_DIR}/res/launcher.icns)
@@ -47,21 +47,41 @@ if(APPLE)
 
   add_executable(Axal MACOSX_BUNDLE ${AXAL_ICON} ${AXAL_SOURCES})
 
-  set_property(TARGET Axal PROPERTY CXX_STANDARD 14)
+  add_library(libaxal STATIC ${AXAL_SOURCES})
+  set_property(TARGET libaxal PROPERTY OUTPUT_NAME axal)
+
+  set_property(TARGET Axal libaxal PROPERTY CXX_STANDARD 14)
+
+  target_compile_definitions(Axal PRIVATE AXAL_MAIN)
 
   target_link_libraries(Axal Qt5::Widgets ${OPENGL_LIBRARIES} ${COCOA} ${IOKIT} ${COREVIDEO})
+  target_link_libraries(libaxal Qt5::Widgets ${OPENGL_LIBRARIES} ${COCOA} ${IOKIT} ${COREVIDEO})
+
+  install(TARGETS libaxal DESTINATION ARCHIVE DESTINATION .)
 else()
   find_package(Threads REQUIRED)
 
   add_executable(axal ${AXAL_ICON} ${AXAL_SOURCES})
-  set_property(TARGET axal PROPERTY CXX_STANDARD 14)
+
+  add_library(libaxal STATIC ${AXAL_SOURCES})
+  set_property(TARGET libaxal PROPERTY OUTPUT_NAME axal)
+
+  set_property(TARGET axal libaxal PROPERTY CXX_STANDARD 14)
 
   if(THREADS_HAVE_PTHREAD_ARG)
     target_compile_options(PUBLIC axal "-pthread")
-  endif()
-  if(CMAKE_THREAD_LIBS_INIT)
-    target_link_libraries(axal "${CMAKE_THREAD_LIBS_INIT}")
+    target_compile_options(PUBLIC libaxal "-pthread")
   endif()
 
+  if(CMAKE_THREAD_LIBS_INIT)
+    target_link_libraries(axal "${CMAKE_THREAD_LIBS_INIT}")
+    target_link_libraries(libaxal "${CMAKE_THREAD_LIBS_INIT}")
+  endif()
+
+  target_compile_definitions(axal PRIVATE AXAL_MAIN)
+
   target_link_libraries(axal Qt5::Widgets ${OPENGL_LIBRARIES} ${CMAKE_DL_LIBS})
+  target_link_libraries(libaxal Qt5::Widgets ${OPENGL_LIBRARIES} ${CMAKE_DL_LIBS})
+
+  install(TARGETS libaxal DESTINATION ARCHIVE DESTINATION .)
 endif()

@@ -22,6 +22,7 @@ class Viewport : public QOpenGLWidget, protected QOpenGLFunctions {
   virtual ~Viewport() noexcept;
 
   void setViewportVisible(bool v);
+  void setPixelFormat(axal_format fmt);
 
  public slots:
   void updateFramebuffer(void* framebuffer, unsigned w, unsigned h);
@@ -59,6 +60,10 @@ class Viewport : public QOpenGLWidget, protected QOpenGLFunctions {
 
   unsigned _width;
   unsigned _height;
+
+  GLint _tex_internalFormat;
+  GLenum _tex_format;
+  GLenum _tex_type;
 
 };
 

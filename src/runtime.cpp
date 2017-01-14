@@ -31,6 +31,7 @@ void ax::Runtime::core_load(void* userdata, const char* filename) {
   // Populate function table
   _core_vt.new_ = _lib->get<void*(void*)>("ax_new");
   _core_vt.delete_ = _lib->get<void(void*)>("ax_delete");
+  _core_vt.get_info = _lib->get<void(void*, axal_info*)>("ax_get_info");
   _core_vt.set_video_refresh = _lib->get<void(void*, axal_video_refresh_fn)>("ax_set_video_refresh");
   _core_vt.set_input_state = _lib->get<void(void*, axal_input_state_fn)>("ax_set_input_state");
   _core_vt.rom_insert = _lib->get<void(void*, const char*)>("ax_rom_insert");
@@ -66,6 +67,10 @@ void ax::Runtime::pause() {
     _thread->join();
     _thread = nullptr;
   }
+}
+
+void ax::Runtime::get_info(axal_info* info) {
+  _core_vt.get_info(_core, info);
 }
 
 void ax::Runtime::reset() {

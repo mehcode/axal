@@ -26,12 +26,14 @@ uniform sampler2D ourTexture;
 
 void main() {
   color = texture(ourTexture, TexCoord);
-  // color = vec4(0.3, 0.4, 0.4, 1.0);
 }
 )";
 
 ax::Viewport::Viewport(QWidget* parent) : QOpenGLWidget(parent), _texture(0), _vao(this), _width(0), _height(0), _visible(false) {
   setFocusPolicy(Qt::StrongFocus);
+
+  // Set default pixel format
+  setPixelFormat(AXFORMAT_R8_G8_B8);
 
   // Setup cross-thread signal
   connect(this, &Viewport::framebufferUpdated, this, &Viewport::updateFramebuffer);
@@ -120,12 +122,46 @@ void ax::Viewport::setViewportVisible(bool v) {
   update();
 }
 
+void ax::Viewport::setPixelFormat(axal_format fmt) {
+  switch (fmt) {
+    case AXFORMAT_R3_G3_B2:
+      _tex_internalFormat = GL_R3_G3_B2;
+      _tex_format = GL_RGB;
+      _tex_type = GL_UNSIGNED_BYTE_3_3_2;
+
+      break;
+
+    case AXFORMAT_R5_B5_G6:
+      _tex_internalFormat = GL_RGB565;
+      _tex_format = GL_RGB;
+      _tex_type = GL_UNSIGNED_SHORT_5_6_5;
+
+      break;
+
+    case AXFORMAT_R8_G8_B8:
+      _tex_internalFormat = GL_RGB;
+      _tex_format = GL_RGB;
+      _tex_type = GL_UNSIGNED_BYTE;
+
+      break;
+
+    case AXFORMAT_R10_G10_B10:
+      _tex_internalFormat = GL_RGB10_A2UI;
+      _tex_format = GL_RGB;
+      _tex_type = GL_UNSIGNED_INT_10_10_10_2;
+
+      break;
+  }
+}
+
 void ax::Viewport::initializeGL() {
   initializeOpenGLFunctions();
 
+  // Generate resources
   glGenBuffers(1, &_vbo);
   glGenBuffers(1, &_ebo);
   glGenTextures(1, &_texture);
+
   _vao.create();
 
   // Compile: Vertex Shader
@@ -157,7 +193,7 @@ void ax::Viewport::initializeGL() {
   glDeleteShader(vertex_shader);
   glDeleteShader(fragment_shader);
 
-  glClearColor(0.3f, 0.3f, 0.3f, 1);
+  glClearColor(0.3f, 0.3f, 0.3f, 0);
   glLoadIdentity();
 
   _vao.bind();
@@ -227,7 +263,7 @@ void ax::Viewport::updateFramebuffer(void* framebuffer, unsigned w, unsigned h) 
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
 
-  glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, w, h, 0, GL_RGB, GL_UNSIGNED_BYTE, framebuffer);
+  glTexImage2D(GL_TEXTURE_2D, 0, _tex_internalFormat, w, h, 0, _tex_format, _tex_type, framebuffer);
   glGenerateMipmap(GL_TEXTURE_2D);
 
   glBindTexture(GL_TEXTURE_2D, 0);

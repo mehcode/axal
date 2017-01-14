@@ -7,22 +7,22 @@ ax::Player::Player(const char* filename) {
   setContentsMargins(1, 0, 1, 1);
   setWindowTitle("Axal");
 
-  // Size
-  // TODO: Get size from last run
-  auto width = (64 * 10) + 2;
-  auto height = (32 * 10) + 1;
-  resize(width, height);
-  setMinimumWidth(width);
-  setMaximumWidth(width);
-  setMinimumHeight(height);
-  setMaximumHeight(height);
-
   // Viewport (OpenGL Playfield)
   auto viewport = new Viewport(this);
   setCentralWidget(viewport);
 
   // Load core
   _runtime.core_load(viewport, filename);
+
+  // Get info from core
+  axal_info info;
+  _runtime.get_info(&info);
+
+  // Size
+  resize(info.min_width, info.min_height);
+
+  // Configure viewport for core
+  viewport->setPixelFormat(info.pixel_format);
 
   // Setup video_refresh
   _runtime.set_video_refresh(&Viewport::_video_refresh);
@@ -103,4 +103,16 @@ ax::Player::~Player() noexcept {
 
 auto ax::Player::viewport() noexcept -> Viewport& {
   return *((Viewport*)centralWidget());
+}
+
+void ax::Player::resize(unsigned w, unsigned h) {
+  auto width = (w * 10) + 2;
+  auto height = (h * 10) + 1;
+
+  QMainWindow::resize(width, height);
+
+  setMinimumWidth(width);
+  setMaximumWidth(width);
+  setMinimumHeight(height);
+  setMaximumHeight(height);
 }

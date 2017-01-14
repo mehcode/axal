@@ -146,6 +146,9 @@ pub enum PixelFormat {
     // 16-bit: 5-bits for Red and Blue, 6-bits for Green
     R5_B5_G6,
 
+    // 24-bit: 8-bits for Red, Green, and Blue
+    R8_G8_B8,
+
     // 32-bit: 10-bits for Red, Green, and Blue (2 unused bits)
     R10_G10_B10,
 }
@@ -303,9 +306,36 @@ pub unsafe fn new<T: 'static + Core + Default>(userdata: *mut libc::c_void) -> B
     })
 }
 
-// Generate extern methods to "expose" the core
+// Generate trampoline to run the bundled UI from a stand-alone executable
 #[macro_export]
-macro_rules! ax_core (($t:path) => {
+macro_rules! ax_generate_main (($lib:ident) => {
+    #[link_args = "-export-dynamic"]
+    extern "C" {}
+
+    extern crate libc;
+
+    extern crate $lib;
+
+    #[link(name = "axal")]
+    extern "C" {
+        fn axal_main(argc: libc::c_int, argv: *const *const libc::c_schar) -> ();
+    }
+
+    fn main() {
+        unsafe {
+            // Run
+            axal_main(0, std::ptr::null());
+
+            // HACK: This forces a native link of the rlib so the
+            //       C API symbols get re-exported here
+            let _ = $lib::ax_new(std::ptr::null_mut());
+        }
+    }
+});
+
+// Generate extern methods to "expose" the core from a shared library
+#[macro_export]
+macro_rules! ax_generate_lib (($t:path) => {
     #[no_mangle]
     pub unsafe extern "C" fn ax_new(userdata: *mut u8) -> *mut $crate::Bundle {
         use std::mem;

@@ -6,6 +6,32 @@
 // Video Refresh
 typedef void (*axal_video_refresh_fn)(void*, uint8_t*, uint32_t, uint32_t, uint32_t);
 
+// Pixel Format
+enum axal_format {
+  // 8-bit: 3-bits for Red and Green, 2-bits for Blue
+  AXFORMAT_R3_G3_B2,
+
+  // 16-bit: 5-bits for Red and Blue, 6-bits for Green
+  AXFORMAT_R5_B5_G6,
+
+  // 24-bit: 8-bits for Red, Green, and Blue
+  AXFORMAT_R8_G8_B8,
+
+  // 32-bit: 10-bits for Red, Green, and Blue (2 unused bits)
+  AXFORMAT_R10_G10_B10,
+};
+
+// Core Information
+typedef struct axal_info {
+  const char* library_name;
+  const char* library_version;
+  axal_format pixel_format;
+  uint32_t min_width;
+  uint32_t min_height;
+  uint32_t max_width;
+  uint32_t max_height;
+} axal_info;
+
 // Input State
 typedef int16_t (*axal_input_state_fn)(void*, uint8_t, uint8_t, uint32_t);
 
@@ -88,6 +114,9 @@ enum axal_key {
 struct axal_core {
   // Create a new instance of the core.
   void* (*new_)(void*);
+
+  // Information
+  void (*get_info)(void*, axal_info*);
 
   // Destroy an instance and release all memory.
   void (*delete_)(void*);

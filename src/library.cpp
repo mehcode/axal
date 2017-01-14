@@ -9,7 +9,6 @@
 ax::Library::Library(const char* filename) : _handle(NULL) {
   // TODO: Fork with #ifdef for WINAPI
   // TODO: Auto apply `.dylib`, `.so`, or `.dll` depending on platform
-
   _handle = (void*)dlopen(filename, RTLD_LAZY);
 
   if (!_handle) {
@@ -32,7 +31,7 @@ void* ax::Library::_get(const char* name) {
     auto handle = dlsym(_handle, name);
 
     if (!handle) {
-      std::fprintf(stderr, "error: failed to resolve symbol: %s\n", name);
+      std::fprintf(stderr, "error: failed to resolve symbol: %s: %s\n", name, dlerror());
       std::exit(EXIT_FAILURE);
     }
 

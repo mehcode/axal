@@ -18,6 +18,8 @@ class Runtime {
   void core_load(void* userdata, const char* filename);
   void core_unload();
 
+  void get_info(axal_info* info);
+
   void rom_insert(const char* filename);
   void rom_remove();
 

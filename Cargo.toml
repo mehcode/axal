@@ -1,9 +1,14 @@
 [package]
 name = "axal"
 version = "0.0.0"
+links = "axal"
+build = "build.rs"
 authors = [
   "Ryan Leckey <leckey.ryan@gmail.com>"
 ]
 
 [dependencies]
 libc = "0.2.18"
+
+[build-dependencies]
+cmake = "0.1"
