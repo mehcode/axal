@@ -46,6 +46,7 @@ class Viewport : public QOpenGLWidget, protected QOpenGLFunctions {
     uint8_t* data, uint32_t width, uint32_t height, uint32_t pitch);
 
   bool _visible;
+  bool _initialized;
 
   GLuint _texture;
   QOpenGLVertexArrayObject _vao;

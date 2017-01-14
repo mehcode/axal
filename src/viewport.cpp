@@ -29,7 +29,7 @@ void main() {
 }
 )";
 
-ax::Viewport::Viewport(QWidget* parent) : QOpenGLWidget(parent), _texture(0), _vao(this), _width(0), _height(0), _visible(false) {
+ax::Viewport::Viewport(QWidget* parent) : QOpenGLWidget(parent), _texture(0), _initialized(false), _vao(this), _width(0), _height(0), _visible(false) {
   setFocusPolicy(Qt::StrongFocus);
 
   // Set default pixel format
@@ -156,6 +156,7 @@ void ax::Viewport::setPixelFormat(axal_format fmt) {
 
 void ax::Viewport::initializeGL() {
   initializeOpenGLFunctions();
+  _initialized = true;
 
   // Generate resources
   glGenBuffers(1, &_vbo);
