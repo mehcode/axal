@@ -29,7 +29,7 @@ ax::Player::Player(const char* filename) {
   setWindowTitle(title_stream.str().c_str());
 
   // Size
-  resize(info.min_width, info.min_height);
+  resize(128, 64);
 
   // Configure viewport for core
   viewport->setPixelFormat(info.pixel_format);
