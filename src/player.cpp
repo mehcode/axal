@@ -2,10 +2,10 @@
 #include "viewport.h"
 
 #include <QFileDialog>
+#include <sstream>
 
 ax::Player::Player(const char* filename) {
   setContentsMargins(1, 0, 1, 1);
-  setWindowTitle("Axal");
 
   // Viewport (OpenGL Playfield)
   auto viewport = new Viewport(this);
@@ -17,6 +17,16 @@ ax::Player::Player(const char* filename) {
   // Get info from core
   axal_info info;
   _runtime.get_info(&info);
+
+  // Title
+  std::stringstream title_stream;
+  title_stream << "Axal - ";
+  title_stream << info.library_name;
+  title_stream << " (";
+  title_stream << info.library_version;
+  title_stream << ")";
+
+  setWindowTitle(title_stream.str().c_str());
 
   // Size
   resize(info.min_width, info.min_height);
