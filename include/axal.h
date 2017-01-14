@@ -7,7 +7,7 @@
 typedef void (*axal_video_refresh_fn)(void*, uint8_t*, uint32_t, uint32_t, uint32_t);
 
 // Pixel Format
-enum axal_format {
+enum axal_format: uint8_t {
   // 8-bit: 3-bits for Red and Green, 2-bits for Blue
   AXFORMAT_R3_G3_B2,
 
